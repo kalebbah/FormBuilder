@@ -39,7 +39,7 @@
     "react-datepicker": "^4.16.0",
     "@types/react-datepicker": "^4.15.1",
     "react-select": "^5.7.3",
-    "@types/react-select": "^5.2.0",
+    "@types/react-select": "^5.0.1",
     "recharts": "^2.7.2",
     "zustand": "^4.3.8"
   },
