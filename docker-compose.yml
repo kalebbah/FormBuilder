@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ascendum-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Ascendum123!
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - ascendum-network
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Ascendum123! -Q 'SELECT 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # .NET Core Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ascendum-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=database;Database=AscendumDB;User Id=sa;Password=Ascendum123!;TrustServerCertificate=true;
+      - JWT__SecretKey=your-super-secret-key-with-at-least-32-characters
+      - JWT__Issuer=AscendumApp
+      - JWT__Audience=AscendumApp
+      - Email__SmtpServer=smtp.gmail.com
+      - Email__SmtpPort=587
+      - Email__Username=your-email@gmail.com
+      - Email__Password=your-app-password
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - ascendum-network
+    volumes:
+      - ./backend:/app
+      - /app/bin
+      - /app/obj
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ascendum-ui
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+      - REACT_APP_ENVIRONMENT=Development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - ascendum-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  # Nginx Reverse Proxy (Optional - for production-like setup)
+  nginx:
+    image: nginx:alpine
+    container_name: ascendum-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - ascendum-network
+    profiles:
+      - production
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  ascendum-network:
+    driver: bridge 

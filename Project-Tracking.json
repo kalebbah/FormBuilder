@@ -1,0 +1,312 @@
+{
+    "ProjectName": "Enterprise Form & Workflow Management System",
+    "Description": "An internal web application for designing and managing digital forms and multi-step workflows. It enables non-technical staff to build forms (with rich field types and conditional logic) and define workflow processes for form approvals and task routing. The goal is to replace paper forms and manual processes with a unified platform, improving efficiency and providing an audit trail for all organizational tasks.",
+    "Progress": {
+      "Overall": {
+        "ProjectSetup": true,
+        "BasicInfrastructure": true,
+        "CoreFeatures": false,
+        "AdvancedFeatures": false,
+        "Testing": false,
+        "Deployment": true,
+        "Documentation": true
+      }
+    },
+    "TechStack": {
+      "Frontend": "React.js (TypeScript, TSX) for a responsive single-page app UI.",
+      "Backend": ".NET Core (C#) web API for business logic and data processing.",
+      "Database": "Microsoft SQL Server for storing all data (form definitions, submissions, workflow info, user accounts, etc.).",
+      "Communication": "The frontend communicates with backend via RESTful JSON APIs (or GraphQL in future if needed). JSON is used to transmit form definitions and submission data.",
+      "Development": "Use Visual Studio (for .NET) and Node/NPM (for React). Code versioning with Git. Package management via NuGet (backend) and NPM (frontend). Testing with xUnit/Jest.",
+      "DevOps": "Docker for containerization of the web app and database, enabling easy deployment and consistent environments. Docker Compose for orchestrating multi-container setup (app + db) in development.",
+      "Progress": {
+        "FrontendSetup": true,
+        "BackendSetup": true,
+        "DatabaseSetup": true,
+        "DockerSetup": true,
+        "CI_CDSetup": false
+      }
+    },
+    "UserRoles": {
+      "User": "Can log in and submit forms, view their own submissions and any tasks assigned to them. Cannot create forms or workflows.",
+      "Admin": "Can create and edit forms via the form builder interface, manage existing forms (update, delete), and view submissions. Admins have all User privileges as well.",
+      "SuperAdmin": "Has all Admin privileges, plus can design and manage workflows (visual workflow builder), manage user accounts/permissions, and configure system-wide settings (e.g., authentication modes, email server).",
+      "Progress": {
+        "UserRoleImplementation": true,
+        "AdminRoleImplementation": true,
+        "SuperAdminRoleImplementation": true,
+        "RoleBasedAccessControl": true
+      }
+    },
+    "Features": {
+      "FormBuilder": {
+        "Purpose": "Allow administrators to build custom forms through a no-code, drag-and-drop interface (similar to Appenate's form builder).",
+        "DragAndDropUI": "Admins can add form fields by dragging field types (text, number, date, dropdown, checkbox, photo upload, signature, etc.) onto a form canvas and rearrange them visually.",
+        "ConditionalLogic": "Support conditional logic to show/hide fields or sections based on user input (e.g., if Field A = X, then reveal Field B). This enables dynamic, responsive forms and branching paths within a form.",
+        "FieldValidation": "Allow setting validation rules for fields (required, min/max, regex pattern, etc.) and formula calculations for derived values (e.g., auto-calculate totals).",
+        "CustomComponents": "Include support for specialized field types like signature capture, photo upload (with camera support), barcode/QR code scanning, NFC tag reading, geolocation fields, and even OCR (text recognition from images). This broad range of components will cover many data capture needs (though some advanced inputs might be phased in over time).",
+        "FormTemplates": "Option to save form designs as templates for reuse or to jump-start new forms.",
+        "OutputDefinition": "Form definitions are stored in the database (e.g., as a JSON schema) representing all fields, layout, and logic. This JSON-driven approach allows the form renderer to dynamically generate the form UI for users.",
+        "FormSubmission": "Users can fill out published forms via a generated UI. On submission, the data is validated and saved to the database, and can trigger a workflow if one is associated with that form. The submitted data is stored (likely as JSON or in a structured table) for record-keeping and further processing.",
+        "Progress": {
+          "FormBuilderBackend": true,
+          "DragAndDropInterface": false,
+          "FieldTypes": {
+            "BasicFields": false,
+            "AdvancedFields": false,
+            "CustomComponents": false
+          },
+          "ConditionalLogic": false,
+          "FieldValidation": false,
+          "FormTemplates": false,
+          "FormRenderer": false,
+          "FormSubmission": false,
+          "FormManagement": false
+        }
+      },
+      "WorkflowEngine": {
+        "Purpose": "Enable design and execution of multi-step workflows that route form submissions through various stages (e.g., approvals, reviews) and different users, creating an auditable process flow.",
+        "VisualDesigner": "Provide a visual drag-and-drop workflow designer for SuperAdmins to define workflows. The designer will allow placing and connecting workflow components (steps) such as form tasks, approval tasks, notifications, decision branches, etc., forming a flowchart of the process.",
+        "WorkflowDefinition": "Each workflow consists of a sequence of steps (which can branch or run in parallel). The system should support sequential flows and parallel branches (forks/joins) similar to modern workflow/BPM engines. For example, a workflow might start with a form submission, then fork into multiple approval tasks in parallel, and join back when all approvals are complete.",
+        "StepTypes": "Supported step types may include: Form Task (assign a form to a user or role to fill out or review), Approval/Review (user approves or rejects a submission), Notification (send an email or alert), Branching Condition (if X then path A else path B), Parallel Fork and Join for concurrent tasks, and an End step. Each step will have configurable parameters (e.g., which form to open, who to assign, what condition to evaluate).",
+        "Assignments": "Workflows can assign tasks to specific users, roles, or groups. For instance, an approval step could route to the submitter's manager or a specific role like 'Warehouse Manager'. The ability to target individuals or groups ensures the workflow can mirror organizational processes.",
+        "WorkflowTriggers": "A workflow can be associated with a form (or multiple forms). When a user submits that form, an instance of the workflow is initiated, carrying the form submission data into it. Alternatively, workflows could be started manually or on a schedule (future capability, e.g., cron-based triggers, though not in initial scope).",
+        "StateTracking": "Each running workflow (workflow instance) will maintain state of which step is currently active and who has the task. The system should track progress so that if a user completes their task, the workflow moves to the next step. Long-running workflows (spanning days or weeks waiting for approvals) are supported by persisting state in the database, so that the process can survive restarts and can be monitored.",
+        "AuditTrail": "Every action in a workflow (form submission, task assignment, approval decision, etc.) is logged with timestamp and user info, creating an audit trail for compliance and review. Users with appropriate roles can view the history of a workflow instance to see what happened at each step (who did what, when).",
+        "Notifications": "When a task is assigned to a user via the workflow, the system can send an email notification to that user (with a link to the application) to alert them of the new task. This ensures timely attention to tasks. In the future, real-time in-app notifications or push notifications could be added for immediate alerts.",
+        "WorkflowStatus": "Provide visibility into workflow instances: e.g., an admin can see that a particular submission is 'Pending Manager Approval' or 'Completed'. This status is determined by which step is active. If workflows are complex, a visual representation of the instance's progress (highlighting current step) could be provided in the UI for tracking.",
+        "Progress": {
+          "WorkflowEngineBackend": true,
+          "VisualDesigner": false,
+          "WorkflowDefinition": true,
+          "StepTypes": {
+            "FormTask": true,
+            "ApprovalTask": true,
+            "Notification": false,
+            "BranchingCondition": false,
+            "ParallelForkJoin": false
+          },
+          "Assignments": true,
+          "WorkflowTriggers": false,
+          "StateTracking": true,
+          "AuditTrail": true,
+          "Notifications": false,
+          "WorkflowStatus": false
+        }
+      }
+    },
+    "Security": {
+      "Authentication": "Initially support local authentication (username/email & password) using ASP.NET Identity. Passwords stored securely (hashed + salted). Optionally enforce 2FA for extra security. In future, integrate Azure Active Directory (OAuth/OIDC) so users can SSO with company credentials; make this pluggable so superadmins can switch auth mode (local or Azure AD) via configuration.",
+      "Authorization": "Role-Based Access Control (RBAC) implemented throughout. Backend APIs and frontend routes are protected based on user role. E.g., form builder endpoints require Admin or SuperAdmin, workflow designer requires SuperAdmin, regular users can only access form submission and their tasks. This ensures users only see and do what their role permits.",
+      "DataSecurity": "Use HTTPS for all communication. Protect sensitive data in transit and at rest. Server-side validation for all form inputs (in addition to client-side) to prevent malicious data. Audit logs as mentioned provide accountability. Also, implement proper error handling to avoid information leaks. Future: possibility of encrypting certain sensitive data fields in the database if needed (especially if forms collect confidential info).",
+      "Progress": {
+        "LocalAuthentication": true,
+        "AzureADIntegration": false,
+        "TwoFactorAuth": false,
+        "RoleBasedAccessControl": true,
+        "HTTPSImplementation": true,
+        "DataEncryption": false,
+        "InputValidation": true,
+        "ErrorHandling": true
+      }
+    },
+    "DataModel": {
+      "Users": "Stores user account information (ID, name, email, hashed password if local auth, role, etc.). If Azure AD is used, may store mapping to AD identifier. Role management can use built-in ASP.NET Identity roles or a custom mapping for the three roles plus possible user groups.",
+      "Forms": "Stores form definitions. Fields might include FormID, title/name, JSON definition (containing field list, layout, conditional logic), createdBy (admin user), createdDate, etc. Possibly a flag for active/published status. If not storing definition as JSON, could have related tables like FormFields, but JSON is more flexible.",
+      "FormSubmissions": "Stores submitted form entries. Each record links to a FormID and the user who submitted. It will include the form data (perhaps as a JSON blob or as separate field columns for key fields). Also store timestamp of submission and status (e.g., 'In Progress' if it's tied to a workflow, or 'Completed').",
+      "Workflows": "Stores workflow definitions (the templates). Fields: WorkflowID, name, definition (possibly JSON or a set of normalized tables representing steps and transitions), createdBy, etc. If using JSON, it would list steps and connections between them. If using tables: separate tables for WorkflowSteps, WorkflowTransitions, etc.",
+      "WorkflowInstances": "Tracks each running instance of a workflow. Fields: InstanceID, WorkflowID (link to definition), startedBy (user who triggered via form), startDate, currentStep, status (e.g., 'Active', 'Completed', 'Cancelled'). Possibly store a history log or link to a log table of events.",
+      "Tasks": "Stores individual tasks for users that come out of workflows. Fields: TaskID, InstanceID (the workflow instance), StepID (which step this task corresponds to, or a reference to a step definition), assignedTo (user or role), assignedDate, completedDate, status (Pending, Completed, Approved/Rejected if applicable). This table allows a user (or a query) to see all tasks assigned to them. Completing a task will update this record and trigger the workflow engine to proceed.",
+      "AuditLogs": "Although each entity above may have its own audit trail, a central AuditLogs table could record events like 'Form X submitted by User Y at time Z', 'Task A approved by Manager at time T', etc. Fields: LogID, timestamp, user, actionType, entityType (form, workflow, task), entityId, description. This makes it easier to review or debug process flows.",
+      "Progress": {
+        "UsersTable": true,
+        "FormsTable": true,
+        "FormSubmissionsTable": true,
+        "WorkflowsTable": true,
+        "WorkflowInstancesTable": true,
+        "TasksTable": true,
+        "AuditLogsTable": true,
+        "DatabaseMigrations": true,
+        "EntityFrameworkSetup": true
+      }
+    },
+    "Architecture": {
+      "Style": "Multi-tier architecture separating frontend, backend, and database. The backend exposes a REST API consumed by the React frontend. The application is designed as a single-page application (SPA) for a dynamic user experience.",
+      "Backend": "ASP.NET Core Web API following a layered approach (Controllers, Services, Repositories). The Controllers expose endpoints for form management (CRUD forms, get forms, submit form), workflow management (define workflows, start workflows, get tasks, etc.), user management, etc. Business logic is in Services (e.g., FormService, WorkflowService) which handle validations and workflow state transitions. Entity Framework Core is used for data access to SQL Server, mapping C# models to database tables.",
+      "Frontend": "React application (created with create-react-app or similar) structured into pages and components. It will use state management (could be Redux or React Context) for managing user session and perhaps form builder state. Key UI components include: Form Builder UI (drag & drop interface to construct forms), Form Renderer (to display a form for input based on definition), Workflow Designer UI (drag & drop canvas for workflows), Task List/Inbox for users, Admin dashboards. The frontend communicates with the backend via asynchronous HTTP calls (using fetch/axios). Authentication may use JWT tokens stored securely (e.g., HTTP-only cookies or in memory) for API calls.",
+      "RealTimeUpdates": "Initially, the system can use simple polling or page refresh to update task lists and statuses. In the future, we might integrate WebSockets or SignalR for real-time notifications (for example, to alert a user immediately when a new task is assigned). But this is optional for MVP, given email notifications are in place.",
+      "Integrations": "The system is built to be extensible. For instance, adding Azure AD authentication will involve integrating with Microsoft identity platform. Other potential integrations: sending emails via SMTP or a service like SendGrid from the backend for notifications; integrating with external APIs (maybe to pull data into forms or push completed data out). These can be added via service classes or Azure Functions, etc., without major changes to form/workflow core logic.",
+      "Progress": {
+        "BackendArchitecture": true,
+        "FrontendArchitecture": true,
+        "APIDesign": true,
+        "StateManagement": true,
+        "RealTimeUpdates": false,
+        "ExternalIntegrations": false
+      }
+    },
+    "Deployment": {
+      "DockerSetup": "The application will be containerized from the start. We will create a Dockerfile for the .NET backend (using a multi-stage build to restore, build, and then run on a lightweight runtime image) and a Dockerfile for the React frontend (which can either run a Node server or be served as static files by a Nginx or by the .NET server).",
+      "DockerCompose": "For development and testing, a docker-compose configuration will define services: the backend API, the frontend (if served separately), and a SQL Server database (using Microsoft's official SQL Server Linux container image). This allows one-command startup of the whole system for developers or automated tests.",
+      "EnvironmentConfig": "Configuration (like DB connection string, email server, etc.) will be provided to containers via environment variables or Docker secrets. The .NET app will use appsettings configured to read from environment in Docker.",
+      "OnPremDeployment": "In production (on-premises server), the system can run as containers orchestrated via Docker Compose or Kubernetes. Data persists in the SQL Server database container (or an external SQL Server instance). Regular backups of the database are essential. The stateless nature of the frontend and backend containers means scaling out (running multiple instances behind a load balancer) is possible if needed. Logging and monitoring can be set up via container logs or adding tools like Elastic Stack in the future.",
+      "SecurityConsiderations": "We'll ensure the Docker images are built with minimal attack surface (using official base images, updating regularly). If exposing externally, use a reverse proxy (like Nginx or Azure App Gateway) for SSL termination and web application firewall features. In an internal network, ensure only authorized users can access the web app.",
+      "Progress": {
+        "BackendDockerfile": true,
+        "FrontendDockerfile": true,
+        "DockerCompose": true,
+        "EnvironmentConfiguration": true,
+        "ProductionDeployment": false,
+        "SecurityHardening": false,
+        "MonitoringSetup": false,
+        "BackupStrategy": false
+      }
+    },
+    "DevelopmentPlan": [
+      {
+        "Phase": "1. Requirements & Design",
+        "Details": "Gather detailed requirements from all departments. Identify the types of forms and workflows needed and any specific rules. Create a specification document outlining features. Design the overall architecture and data model (as above). Choose libraries for form builder (e.g., consider using open-source SurveyJS or similar to speed up development) and workflow engine (consider libraries like Elsa or Workflow Core, or plan a custom implementation if needed). Design prototypes or wireframes for the UI (form builder interface, form filling page, workflow designer, task list UI).",
+        "Progress": {
+          "RequirementsGathering": true,
+          "ArchitectureDesign": true,
+          "LibrarySelection": true,
+          "UIPrototypes": false,
+          "SpecificationDocument": true
+        }
+      },
+      {
+        "Phase": "2. Setup & Foundations",
+        "Details": "Initialize the project repository. Set up the .NET solution (projects for API, maybe separate projects for core logic if desired) and the React app. Implement basic continuous integration (CI) pipeline to build and run tests, perhaps using GitHub Actions or Azure DevOps. Set up the database schema using Entity Framework migrations or SQL scripts. Implement the user authentication and RBAC basics (user registration or seeding, login, JWT issuance, role checks). Verify that a User can log in and sees a basic dashboard, Admin/SuperAdmin can be differentiated.",
+        "Progress": {
+          "ProjectInitialization": true,
+          "NETSolutionSetup": true,
+          "ReactAppSetup": true,
+          "CIPipeline": false,
+          "DatabaseSchema": true,
+          "Authentication": true,
+          "RBACBasics": true,
+          "BasicDashboard": true
+        }
+      },
+      {
+        "Phase": "3. Form Builder Module",
+        "Details": "Develop the form builder backend APIs: create form, update form, get form, list forms. Develop the form builder UI in React: a drag-and-drop interface for constructing forms. This likely involves either using a library or building custom drag/drop logic. Ensure that the UI can define field properties, validation rules, and conditional logic. When saved, the form structure is sent to the backend to be stored (as JSON). Implement the form renderer component to display a form for users based on the saved definition. Test by creating a sample form and submitting it as a user.",
+        "Progress": {
+          "FormBuilderAPIs": true,
+          "DragAndDropUI": false,
+          "FieldProperties": false,
+          "ValidationRules": false,
+          "ConditionalLogic": false,
+          "FormRenderer": false,
+          "FormSubmission": false,
+          "Testing": false
+        }
+      },
+      {
+        "Phase": "4. Workflow Engine Module",
+        "Details": "Implement the workflow engine on the backend. Start with a simple model: define how to represent workflows (e.g., JSON or tables). Develop APIs to create/read/update workflow definitions. Implement logic to initiate a workflow when a form is submitted: create a WorkflowInstance, create initial tasks, etc. Build the workflow progression logic: when a task is completed, advance to the next step(s). Ensure parallel paths and joining logic is handled (this can be complex - consider using an existing engine or simplifying initial scope to sequential and simple approval flows). Develop the workflow designer UI for SuperAdmins: allow them to visually design a flow by selecting step types and connecting them. This can be done with a diagramming library or a simplified UI. The output of the designer is saved as a workflow definition in the backend.",
+        "Progress": {
+          "WorkflowEngineBackend": true,
+          "WorkflowRepresentation": true,
+          "WorkflowAPIs": true,
+          "WorkflowInitiation": false,
+          "WorkflowProgression": false,
+          "ParallelPaths": false,
+          "WorkflowDesignerUI": false,
+          "WorkflowDefinitionStorage": true
+        }
+      },
+      {
+        "Phase": "5. Task Management & Notifications",
+        "Details": "Develop the task list functionality. Backend: API to fetch tasks for the logged-in user (filter by tasks where assignedTo = user or user role). Frontend: page for users to see their pending tasks (e.g., forms to approve or complete). Provide actions to complete tasks (approve, fill details, etc.). When a task is completed, the backend logic updates the workflow instance and moves to next step. Set up email notifications via SMTP for task assignments: when a new task is created for someone, send an email to notify them (could use a background worker or just handle in request for simplicity). Test the end-to-end scenario: User submits form -> workflow starts -> task assigned to reviewer -> reviewer gets email and sees task -> reviewer completes task -> workflow moves to next step or finishes.",
+        "Progress": {
+          "TaskListBackend": true,
+          "TaskListFrontend": true,
+          "TaskActions": false,
+          "TaskCompletion": false,
+          "EmailNotifications": false,
+          "EndToEndTesting": false
+        }
+      },
+      {
+        "Phase": "6. Testing & Quality Assurance",
+        "Details": "Thoroughly test all components. Write unit tests for form logic (conditional fields etc.), workflow logic (simulate various workflow paths), and permission controls. Perform integration testing of the entire flow with multiple users. Also test edge cases (e.g., user submits form then is removed, what happens to task?). Ensure the security controls are effective (e.g., a User cannot call an admin API). Perform user acceptance testing with some actual end users to get feedback on the form builder usability and workflow designs.",
+        "Progress": {
+          "UnitTests": false,
+          "IntegrationTests": false,
+          "SecurityTests": false,
+          "EdgeCaseTesting": false,
+          "UserAcceptanceTesting": false,
+          "PerformanceTesting": false
+        }
+      },
+      {
+        "Phase": "7. Deployment & Rollout",
+        "Details": "Create production-ready Docker images. Compose the stack and deploy on the target server (on-premises). Before going live, configure environment variables for production (DB connection, email server credentials for notifications, any Azure AD integration keys if ready). Perform data seeding as necessary (e.g., create initial SuperAdmin account). Once deployed, do a soft launch with a small group or department, gather feedback, then roll out to the whole organization. Provide training/documentation for end users and admins.",
+        "Progress": {
+          "ProductionDockerImages": false,
+          "ServerDeployment": false,
+          "EnvironmentConfiguration": false,
+          "DataSeeding": false,
+          "SoftLaunch": false,
+          "FullRollout": false,
+          "TrainingDocumentation": false
+        }
+      },
+      {
+        "Phase": "8. Maintenance & Future Improvements",
+        "Details": "After initial launch, monitor system usage, performance, and error logs. Fix bugs promptly. Plan iterative improvements: for example, adding more form field types, enhancing the workflow designer UI (making it more user-friendly), adding new notification channels (push notifications or SMS), optimizing performance (caching frequently used data, etc.), and implementing the Azure AD authentication if not already done. Also consider implementing features like multi-language support, advanced analytics/reporting on form submissions, and integration with other internal systems as needed.",
+        "Progress": {
+          "SystemMonitoring": false,
+          "BugFixes": false,
+          "PerformanceOptimization": false,
+          "FeatureEnhancements": false,
+          "AzureADIntegration": false,
+          "MultiLanguageSupport": false,
+          "AnalyticsReporting": false,
+          "SystemIntegrations": false
+        }
+      }
+    ],
+    "FutureEnhancements": {
+      "MobileSupport": "Implement a mobile-responsive design and possibly a dedicated mobile app. This could include offline form filling capability (caching forms and submissions on device, sync when online) for field staff who work in areas without constant internet.",
+      "AdvancedWorkflowFeatures": "Introduce a more sophisticated workflow designer supporting features like looping, sub-workflows, or SLA timers (e.g., escalate if a task is not done in X days). Also, allow workflow versioning and updates.",
+      "Integrations": "Provide integration hooks: for example, allow forms to pull data from external APIs or databases (similar to Appenate's REST field feature) to auto-fill options. Also, send completed form data to other systems or webhooks. Integration with tools like Power BI or a reporting engine for analytics on collected data could be valuable.",
+      "AuditAnalytics": "Build an admin dashboard for process analytics - e.g., average time to complete workflows, number of forms submitted per department, etc. Use the audit trail and submission data to generate insights and identify bottlenecks.",
+      "MultiTenancy": "If needed, adapt the system to support multiple independent environments or clients (multi-tenant), or at least separate data by departments within the company (so each department can administer its own forms and workflows). This was hinted at by possible separate department environments similar to Appenate.",
+      "Customization": "Allow more customization in the form and workflow designers: e.g., custom themes/branding for the form UI (as SurveyJS supports theme JSON) or custom coded steps in workflows for edge logic. Possibly expose a scripting interface for advanced admins to write small scripts for validation or workflow rules.",
+      "Progress": {
+        "MobileSupport": false,
+        "AdvancedWorkflowFeatures": false,
+        "ExternalIntegrations": false,
+        "AuditAnalytics": false,
+        "MultiTenancy": false,
+        "Customization": false
+      }
+    },
+    "Notes": {
+      "LastUpdated": "2024-12-19",
+      "CurrentPhase": "Phase 3 - Form Builder Module",
+      "NextMilestone": "Complete Form Builder UI with drag-and-drop interface",
+      "Blockers": [],
+      "CompletedItems": [
+        "Project setup and infrastructure",
+        "Backend architecture with .NET Core API",
+        "Frontend architecture with React/TypeScript",
+        "Database schema and Entity Framework setup",
+        "Authentication and authorization system",
+        "User roles and RBAC implementation",
+        "Docker containerization",
+        "Basic API endpoints for forms and workflows",
+        "Data models and DTOs",
+        "Task list backend and frontend structure"
+      ],
+      "PriorityItems": [
+        "Form Builder drag-and-drop UI",
+        "Form renderer component",
+        "Workflow designer UI",
+        "Email notification system",
+        "Form submission workflow integration"
+      ]
+    }
+  } 
